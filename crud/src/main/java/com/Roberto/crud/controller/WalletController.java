@@ -6,6 +6,7 @@ import com.Roberto.crud.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 public class WalletController {
@@ -19,12 +20,15 @@ public class WalletController {
     @PostMapping("/createWallet")
     public ResponseEntity<String> registerWallet(@RequestBody WalletDTO walletDTO) {
         walletService.createWallet(walletDTO);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok("Wallet registered successfully");
     }
 
     @GetMapping("/getMyWallets")
-    public Set<Wallet> getMyWallets(@RequestParam String username) {
-       return walletService.getPersonalWallets(username);
+    public Set<Wallet> getMyWallets(
+            @RequestParam(required = false) UUID id,
+            @RequestHeader("Authorization") String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        return walletService.getPersonalWallets(id,jwt);
     }
 
     @GetMapping("/allWallets")
