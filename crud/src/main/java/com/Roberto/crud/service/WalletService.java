@@ -56,17 +56,26 @@ public class WalletService {
             throw new UsernameNotFoundException("User not found");
         }
 
-        User targetUser = jwtOwner;
+        if(id != null) {
+            boolean isAdmin = false;
 
-        if (id != null) {
-            boolean isAdmin = jwtOwner.getRoles().stream()
-                    .anyMatch(role -> role.getRoleName().equals("ADMIN"));
-            if (isAdmin) {
-                targetUser = userRepository.findById(id).
-                        orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            Role role = roleRepository.findByRoleName("ADMIN")
+                    .orElseThrow(() -> new UsernameNotFoundException("Role not found"));
+
+
+            for(Role r : roleRepository.findAll()) {
+                if(jwtOwner.getRoles().contains(role)) {
+                    isAdmin = true;
+                    break;
+                }
+            }
+            if(isAdmin) {
+                jwtOwner = userRepository.findById(id)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
             }
         }
-        return new HashSet<>(targetUser.getWallets());
+
+        return new HashSet<>(jwtOwner.getWallets());
     }
 
     public Iterable<Wallet> getAllWallets() {
